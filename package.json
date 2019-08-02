@@ -1,0 +1,70 @@
+{
+  "name": "react-electron-browser",
+  "version": "1.0.0",
+  "private": false,
+  "license": "MIT",
+  "author": {
+    "name": "Alan Zhao",
+    "email": "your.email@domain.com",
+    "url": "https://your-website.com"
+  },
+  "build": {
+    "appId": "com.my-website.react-electron-browser",
+    "productName": "ReactElectronBrowser",
+    "copyright": "Copyright © 2019 ${author}",
+    "mac": {
+      "category": "public.app-category.utilities"
+    },
+    "files": [
+      "build/**/*",
+      "node_modules/**/*"
+    ],
+    "directories": {
+      "buildResources": "assets"
+    }
+  },
+  "homepage": "./",
+  "main": "build/electron.js",
+  "scripts": {
+    "dev": "concurrently \"BROWSER=none yarn start\" \"wait-on http://localhost:5000 && cross-env ELECTRON_START_URL=http://localhost:5000 electron .\"",
+    "start": "cross-env PORT=5000 react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "cover": "yarn test --coverage --watchAll",
+    "postinstall": "electron-builder install-app-deps",
+    "package": "yarn build && electron-builder -m"
+  },
+  "eslintConfig": {
+    "extends": "react-electron-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "dependencies": {
+    "bootstrap": "^4.3.1",
+    "react": "^16.8.6",
+    "react-bootstrap": "^1.0.0-beta.9",
+    "react-dom": "^16.8.6",
+    "react-router-dom": "^5.0.1",
+    "react-scripts": "3.0.2"
+  },
+  "devDependencies": {
+    "@fortawesome/fontawesome-free": "^5.9.0",
+    "concurrently": "^4.1.1",
+    "cross-env": "^5.2.0",
+    "electron": "^5.0.7",
+    "electron-builder": "^21.1.1",
+    "node-sass": "^4.12.0",
+    "typescript": "^3.5.3",
+    "wait-on": "^3.3.0"
+  }
+}

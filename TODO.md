@@ -1,0 +1,12 @@
+- React Redux?
+- Kiosk mode / Auto start
+- Phone gap
+- https://blog.dcpos.ch/how-to-make-your-electron-app-sexy
+
+- Express backend for DB call
+- Why isAuthenticated, checkCreds call twice
+- Remove table default values
+- Add don't show again in update modal
+- yarn publish - publish to s3 and update version info in database. display a new version in console
+- Database timezone
+- Securely store creds

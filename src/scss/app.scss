@@ -1,0 +1,144 @@
+@import '../../node_modules/bootstrap/scss/bootstrap.scss';
+@import '../../node_modules/@fortawesome/fontawesome-free/css/all.css';
+
+@import './variables.scss';
+@import './animations.scss';
+
+html {
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+body {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+
+  /* Prevent callout to copy image, etc when tap to hold */
+  -webkit-touch-callout: none;
+
+  /* Prevent webkit from resizing text to fit */
+  -webkit-text-size-adjust: none;
+
+  /* Disable text selection, or your app will feel like a web page */
+  -webkit-user-select: none;
+  -webkit-app-region: drag;
+
+  /* Font smoothing */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.logo {
+  background-image: url('../images/logo.svg');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 400px auto;
+
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+
+  animation-duration: 1s;
+  animation-fill-mode: both;
+  animation-name: bounce;
+}
+
+// Begin app layout
+
+#app {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+
+  display: flex;
+  flex-direction: column;
+
+  // Smoother startup
+  animation: fadeIn 0.5s;
+}
+
+main {
+  // Expand
+  flex: 1;
+}
+
+footer,
+header {
+  display: flex;
+  justify-content: center;
+
+  background-color: $theme-color-orange;
+  padding: 20px;
+}
+
+// End app layout
+
+header {
+  ul {
+    /* https://css-tricks.com/flexbox-bar-navigation/ */
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    list-style: none;
+
+    li {
+      a {
+        padding: 1.25rem 0.5rem;
+        font-size: 1.6rem;
+        font-weight: normal;
+        text-decoration: none;
+        text-transform: uppercase;
+        display: flex;
+        align-items: flex-start;
+        color: #fff;
+        letter-spacing: 2px;
+      }
+
+      .selected {
+        text-decoration: underline;
+      }
+    }
+  }
+}
+
+footer {
+  color: #fff;
+  font-size: 16px;
+  .col-left {
+    text-align: center;
+    @include media-breakpoint-up(md) {
+      text-align: left;
+    }
+  }
+
+  .col-right {
+    text-align: center;
+    @include media-breakpoint-up(md) {
+      text-align: right;
+    }
+  }
+}
+
+.page {
+  padding: 20px;
+
+  /* Smoother startup */
+  animation: fadeIn 0.5s;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
+}
