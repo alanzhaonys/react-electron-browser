@@ -1,3 +1,5 @@
+![Screenshot](/screenshot1.jpeg?raw=true "Screenshot 1")
+
 Tutorials:
 
 Electron and React
