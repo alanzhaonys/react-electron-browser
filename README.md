@@ -38,3 +38,13 @@ To generate coverage report
 To package
 - Run `yarn package`
 
+Hosting
+On Apache:
+You need to add Web.config to redirect all 404 to index.html, see public/.htaccess
+
+On IIS:
+You need to add Web.config to redirect all 404 to index.html, see public/Web.config
+
+On S3:
+You need to point 404 to index.html for routes to work
+https://stackoverflow.com/questions/51218979/react-router-doesnt-work-in-aws-s3-bucket
