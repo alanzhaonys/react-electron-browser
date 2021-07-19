@@ -9,6 +9,9 @@ Electron and React
 Customize create-react-app:
 - https://auth0.com/blog/how-to-configure-create-react-app/
 
+Version
+- Node v14 is required
+
 How to use this project?
 - Fork and clone
 - Edit app info in package.json
