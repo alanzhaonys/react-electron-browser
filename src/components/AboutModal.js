@@ -20,9 +20,7 @@ export class AboutModal extends React.Component {
         </Modal.Header>
         <Modal.Body>
           <p>
-            Cras mattis consectetur purus sit amet fermentum. Cras justo odio,
-            dapibus ac facilisis in, egestas eget quam. Morbi leo risus, porta ac
-            consectetur ac, vestibulum at eros.
+            Please checkout MakerAL.com for more goodies.
           </p>
         </Modal.Body>
         <Modal.Footer>

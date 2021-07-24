@@ -15,7 +15,7 @@ export class Footer extends Page {
         <Container>
           <Row>
             <Col className="col-left" md={6}>
-              &copy; All Rights Reserved 2019. Version {version}.
+              &copy; All Rights Reserved 2019-2021 by MakerAL.com. Version {version}.
             </Col>
             <Col className="col-right" md={6}>
               <AboutWidget />
