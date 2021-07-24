@@ -62,11 +62,18 @@ export class Home extends Page {
 
     let loader = new GLTFLoader();
     let mesh = null;
-    loader.load("skull/scene.gltf", gltf => {
+    loader.load("shiba/scene.gltf", gltf => {
       mesh = gltf.scene;
       mesh.scale.set(5, 5, 5);
       mesh.position.set(0, 0, 0);
       //pivot.add( mesh );
+
+      const box = new THREE.Box3().setFromObject(mesh);
+      const boxHelper = new THREE.Box3Helper(box, 0xffff00);
+      scene.add(boxHelper);
+      let center = box.getCenter(new THREE.Vector3());
+      let size = box.getSize(new THREE.Vector3());
+      mesh.position.set(-center.x, size.y / 2 - center.y, -center.z);
 
       scene.add(mesh);
       animate();
