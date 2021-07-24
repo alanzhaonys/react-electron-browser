@@ -26,3 +26,25 @@
   }
 }
 
+// https://stackoverflow.com/questions/45537844/slide-up-animation
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 75%, 0);
+  }
+
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes rotate {
+  from {
+    background-position: -3000px;
+  }
+
+  to {
+    background-position: 0px;
+  }
+}

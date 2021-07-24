@@ -1,5 +1,6 @@
 {
   "name": "react-electron-browser",
+  "description": "my app description",
   "version": "1.2.0",
   "private": false,
   "license": "MIT",
@@ -10,10 +11,15 @@
   },
   "build": {
     "appId": "com.my-website.react-electron-browser",
-    "productName": "ReactElectronBrowser",
+    "productName": "MyApp",
     "copyright": "Copyright © 2019-2020 ${author}",
     "mac": {
-      "category": "public.app-category.utilities"
+      "category": "public.app-category.utilities",
+      "icon": "build/icon.icns",
+      "target": [
+        "dir",
+        "dmg"
+      ]
     },
     "files": [
       "build/**/*",
