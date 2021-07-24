@@ -142,3 +142,11 @@ footer {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
 }
+
+#menu {
+  position: absolute;
+  top: 300px;
+  right: 200px;
+  color: yellow;
+  display: none;
+}
