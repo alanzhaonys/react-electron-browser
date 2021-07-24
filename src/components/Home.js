@@ -13,22 +13,36 @@ export class Home extends Page {
 
   // Runs after the first render() lifecycle
   componentDidMount() {
+    let canvasWidth = window.innerWidth;
+    let canvasHeight = window.innerHeight - document.getElementsByTagName("header")[0].clientHeight
+    - document.getElementsByTagName("footer")[0].clientHeight;
+
+    console.log("Canvas width: " + canvasWidth);
+    console.log("Canvas height: " + canvasHeight);
+
     let scene = new THREE.Scene();
     scene.background = new THREE.Color("black");
 
     let camera = new THREE.PerspectiveCamera(
       100,
-      window.innerWidth / window.innerHeight,
+      canvasWidth / canvasHeight,
       0.1,
       2000
     );
     camera.position.set(0, 0, 50);
     camera.lookAt(new THREE.Vector3(0, 0, 0));
 
-    //let hlight = new THREE.AmbientLight(0x404040, 100);
+    let renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(canvasWidth, canvasHeight);
+    document.getElementById("scene").appendChild(renderer.domElement);
+
+    let controls = new OrbitControls(camera, renderer.domElement);
+    controls.addEventListener("change", refresh);
+
+    //let hlight = new THREE.AmbientLight(0x404040, 10);
     //scene.add(hlight);
 
-    let directionalLight = new THREE.DirectionalLight(0xffffff, 10);
+    let directionalLight = new THREE.DirectionalLight(0xffffff, 5);
     directionalLight.position.set(0, 1, 0);
     directionalLight.castShadow = true;
     scene.add(directionalLight);
@@ -61,56 +75,55 @@ export class Home extends Page {
     scene.add(pointLight);
     */
 
-    let renderer = new THREE.WebGLRenderer({ antialias: true });
-    //renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setSize(1100, 600);
-    document.getElementById("scene").appendChild(renderer.domElement);
-
-    let controls = new OrbitControls(camera, renderer.domElement);
-    controls.addEventListener("change", refresh);
-
     //let pivot = new THREE.Group();
     //scene.add( pivot );
 
     let loader = new GLTFLoader();
-    let mesh = null;
+    let mainMesh = null;
     loader.load("skull/scene.gltf", gltf => {
-      mesh = gltf.scene;
-      mesh.scale.set(15, 15, 15);
-      mesh.position.set(0, 0, 0);
-      //pivot.add( mesh );
+      mainMesh = gltf.scene;
+      mainMesh.name = "Main";
+      mainMesh.userData.isContainer = true;
+      mainMesh.scale.set(15, 15, 15);
+      mainMesh.position.set(0, 0, 0);
+      //pivot.add( mainMesh );
 
-      //const box = new THREE.Box3().setFromObject(mesh);
+      //const box = new THREE.Box3().setFromObject(mainMesh);
       //const boxHelper = new THREE.Box3Helper(box, 0xffff00);
       //scene.add(boxHelper);
 
       //let center = box.getCenter(new THREE.Vector3());
       //let size = box.getSize(new THREE.Vector3());
-      //mesh.position.set(-center.x, size.y / 2 - center.y, -center.z);
-      mesh.position.set(0, 0, 0);
+      //mainMesh.position.set(-center.x, size.y / 2 - center.y, -center.z);
 
-      scene.add(mesh);
-      animate();
+      scene.add(mainMesh);
+
+      // On click call back
+      mainMesh.callback = () => {
+        console.log("Main clicked");
+      };
     });
 
     // add 3D text beveled and sized
     const fontLoader = new THREE.FontLoader();
-    fontLoader.load("fonts/nobile_regular.typeface.json", function(font) {
+    fontLoader.load("fonts/amble_regular.typeface.json", function(font) {
       let textGeo = new THREE.TextGeometry("ARE YOU LOST?", {
         font: font,
-        size: 13,
-        height: 1,
-        curveSegments: 5,
-        bevelThickness: 1,
-        bevelSize: 1,
+        size: 10,
+        height: 0.5,
+        curveSegments: 10,
+        bevelThickness: 0.5,
+        bevelSize: 0.5,
         bevelEnabled: true
       });
 
       let material = new THREE.MeshPhongMaterial({
-        color: "red"
+        color: 0xff0000
       });
 
       let textMesh = new THREE.Mesh(textGeo, material);
+      textMesh.name = "Text";
+      textMesh.userData.isContainer = true;
       //textMesh.scale.set(0.5, 0.5, 0.5);
 
       textGeo.computeBoundingBox();
@@ -119,7 +132,7 @@ export class Home extends Page {
       // Center Y
       //const centerY = -0.5 * ( textGeo.boundingBox.max.y - textGeo.boundingBox.min.y );
       const centerY =
-        -2.5 * (textGeo.boundingBox.max.y - textGeo.boundingBox.min.y);
+        -3 * (textGeo.boundingBox.max.y - textGeo.boundingBox.min.y);
 
       //let center = box.getCenter(new THREE.Vector3());
       //let size = box.getSize(new THREE.Vector3());
@@ -136,18 +149,100 @@ export class Home extends Page {
       //scene.add(boxHelper);
 
       scene.add(textMesh);
+
+      // On click call back
+      textMesh.callback = () => {
+        console.log("Text clicked");
+      };
+
+      animate();
     });
 
-    refresh();
+    renderer.domElement.addEventListener("click", onMouseClick, false);
+    renderer.domElement.addEventListener("mousemove", onMouseMove, false);
+
+    let raycaster = new THREE.Raycaster();
+    let mouse = new THREE.Vector2();
+    let intersected = null;
+    let mouseMoved = false;
+
+    function updateMouse(event) {
+      let canvasBounds = renderer.domElement.getBoundingClientRect();
+
+      mouse.x =
+        ((event.clientX - canvasBounds.left) /
+          (canvasBounds.right - canvasBounds.left)) *
+          2 -
+        1;
+      mouse.y =
+        -(
+          (event.clientY - canvasBounds.top) /
+          (canvasBounds.bottom - canvasBounds.top)
+        ) *
+          2 +
+        1;
+    }
+
+    function onMouseClick(event) {
+      updateMouse(event);
+
+      raycaster.setFromCamera(mouse, camera);
+
+      let intersects = raycaster.intersectObjects(scene.children, true);
+      if (intersects.length > 0) {
+        let object = intersects[0].object;
+
+        // Walk up to get parent object
+        while (!object.userData.isContainer) {
+          object = object.parent;
+        }
+        object.callback();
+      }
+    }
+
+    function onMouseMove(event) {
+      updateMouse(event);
+
+      mouseMoved = true;
+    }
 
     function refresh() {
       renderer.render(scene, camera);
     }
 
     function animate() {
-      if (mesh) {
-        mesh.rotation.y += 0.01;
+      // Rotate main mesh
+      if (mainMesh) {
+        mainMesh.rotation.y += 0.01;
       }
+
+      if (mouseMoved) {
+        // Update the picking ray with the camera and mouse position
+        raycaster.setFromCamera(mouse, camera);
+
+        // Calculate objects intersecting the picking ray
+        const intersects = raycaster.intersectObjects(scene.children, true);
+
+        if (intersects.length > 0) {
+          if (intersected != intersects[0].object) {
+            if (intersected) {
+              intersected.material.color.setHex(intersected.currentHex);
+            }
+
+            intersected = intersects[0].object;
+            intersected.currentHex = intersected.material.color.getHex();
+            intersected.material.color.setHex(0x00ff00);
+            document.body.style.cursor = "pointer";
+          }
+        } else {
+          if (intersected) {
+            intersected.material.color.setHex(intersected.currentHex);
+          }
+          intersected = null;
+          document.body.style.cursor = "default";
+        }
+      }
+
       renderer.render(scene, camera);
       requestAnimationFrame(animate);
     }
