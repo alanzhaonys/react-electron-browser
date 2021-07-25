@@ -100,6 +100,9 @@ export class Lost extends Page {
       mainMesh.callback = () => {
         console.log("Main clicked");
       };
+
+      document.querySelector("#scene").style.display = "block";
+      document.querySelector(".loading").style.display = "none";
     });
 
     // add 3D text beveled and sized
@@ -272,13 +275,11 @@ export class Lost extends Page {
 
   render() {
     return (
-      <div className="page">
+      <div className="page lost">
+        <div className="loading">
+          <i className="fas fa-spin fa-sync" />
+        </div>
         <div id="scene"></div>
-        <ul id="menu">
-          <li>Menu 1</li>
-          <li>Menu 2</li>
-          <li>Menu 3</li>
-        </ul>
       </div>
     );
   }

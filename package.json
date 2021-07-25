@@ -1,7 +1,7 @@
 {
   "name": "react-electron-browser",
-  "description": "Virtual Human Muscle Anatomy",
-  "version": "1.2.0",
+  "description": "Virtual Human Muscle Anatomy Demo",
+  "version": "1.7.0",
   "private": false,
   "license": "MIT",
   "author": {

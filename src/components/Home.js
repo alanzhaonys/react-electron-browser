@@ -12,10 +12,8 @@ const path = require("path");
  * Todo:
  * reset pos
  * stop/result animate
- * loading spinner
  * mouse pointer issue
- * about
- * body label
+ * zoom in
  */
 
 export class Home extends Page {
@@ -121,6 +119,9 @@ export class Home extends Page {
 
       // After main mesh is loaded
       setupKeyControls();
+
+      document.querySelector("#scene").style.display = "block";
+      document.querySelector(".loading").style.display = "none";
     });
 
     renderer.domElement.addEventListener("click", onMouseClick, false);
@@ -333,55 +334,85 @@ export class Home extends Page {
 
   render() {
     return (
-      <div className="page">
+      <div className="page home">
+        <div className="loading">
+          <i className="fas fa-spin fa-sync" />
+        </div>
         <div id="scene"></div>
+        <div id="disclaimer">Disclaimer: This application is used for demo and learning purposes of <a href="https://www.electronjs.org/" target="_blank">Electron</a>, <a href="https://reactjs.org/" target="_blank">React</a> and <a href="https://reactjs.org/" target="_blank">Three.js</a>.</div>
         <div className="part" id="part-1">
-          Part 1
+          Gluteus maximus
         </div>
         <div className="part" id="part-2">
-          Part 2
+          Deltoid<br/>
+          Rhomboid<br/>
+          Teres Major
         </div>
         <div className="part" id="part-3">
-          Part 3
+          Gastrocnemius<br/>
+          Soleus
         </div>
         <div className="part" id="part-4">
-          Part 4
+          Semitendinosis<br/>
+          Biceps Femoris
         </div>
         <div className="part" id="part-5">
-          Part 5
+          Vastus Latera
         </div>
         <div className="part" id="part-6">
-          Part 6
+          Trapezius<br/>
+          Thoraco-lumbar Fascia<br/>
+          Latissimus Dorsi
         </div>
         <div className="part" id="part-7">
-          Part 7
+          Frontalis<br/>
+          Orbicularis Oculi<br/>
+          Zygomaticus<br/>
+          Masseter<br/>
+          Orbicularis Oris
         </div>
         <div className="part" id="part-8">
-          Part 8
+          Rectus Femoris<br/>
+          Pectineus<br/>
+          Sartorius<br/>
+          Adductor Longus<br/>
+          Gracilis
         </div>
         <div className="part" id="part-9">
-          Part 9
+          Sternocleidomastoid<br/>
+          Trapezius
         </div>
         <div className="part" id="part-10">
-          Part 10
+          Lubrical
         </div>
         <div className="part" id="part-11">
-          Part 11
+          Pectoralis Major<br/>
+          Rectus Abdominus<br/>
+          Serratus Anterior<br/>
+          External Oblique
         </div>
         <div className="part" id="part-12">
-          Part 12
+          Peroneus Longus<br/>
+          Extensor Digitorum Brevis<br/>
+          Extensor Hallucis Brevis<br/>
+          Tibialis Anterior
         </div>
         <div className="part" id="part-13">
-          Part 13
+          Gracilis<br/>
+          Semimembranosus
         </div>
         <div className="part" id="part-14">
-          Part 14
+          Gastrocnemius<br/>
+          Soleus
         </div>
         <div className="part" id="part-15">
-          Part 15
+          Extensor Carpi Radialis<br/>
+          Extensor Digitorum<br/>
+          Extensor Capri Ulnaris<br/>
+          Extensor Digiti Minimi
         </div>
         <div className="part" id="part-16">
-          Part 16
+          Triceps
         </div>
       </div>
     );
