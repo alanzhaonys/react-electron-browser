@@ -12,12 +12,6 @@ import { Page } from "./base/Page";
 
 const path = require("path");
 
-/**
- * Todo:
- * Mouse pointer issue
- * Zoom in capability
- */
-
 export class Home extends Page {
   constructor(props) {
     super(props);
@@ -37,7 +31,12 @@ export class Home extends Page {
   }
 
   // Reset
-  reset() {}
+  reset() {
+    this.camera.position.set(0, 0, 50);
+    this.camera.lookAt(new THREE.Vector3(0, 0, 0));
+    this.controls.reset();
+    this.controls.update();
+  }
 
   startAnimation() {
     if (!this.animationRequest) {
@@ -144,7 +143,6 @@ export class Home extends Page {
 
   // Callback
   animate = () => {
-    console.log("animating");
     // Rotate main mesh
     if (this.mainMesh && this.state.rotateStatus === true) {
       this.mainMesh.rotation.y += 0.01;
@@ -287,8 +285,8 @@ export class Home extends Page {
     this.renderer.shadowMap.enabled = true;
     document.getElementById("scene").appendChild(this.renderer.domElement);
 
-    let controls = new OrbitControls(this.camera, this.renderer.domElement);
-    controls.addEventListener("change", this.renderScene);
+    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+    this.controls.addEventListener("change", this.renderScene);
 
     let hemiLight = new THREE.HemisphereLight(0xffeeb1, 0x080820, 5);
     this.scene.add(hemiLight);
@@ -357,7 +355,9 @@ export class Home extends Page {
 
       // Showing all
       document.querySelector("#scene").style.display = "block";
-      document.querySelector("#control-group").style.display = "block";
+      document.querySelector("#instructions").style.display = "block";
+      document.querySelector("#controls").style.display = "block";
+      document.querySelector("#disclaimer").style.display = "block";
       document.querySelector(".loading").style.display = "none";
 
       // Register events
@@ -384,12 +384,19 @@ export class Home extends Page {
           <i className="fas fa-spin fa-sync" />
         </div>
         <div id="scene"></div>
-        <div id="control-group">
+        <div id="instructions">
+          <p><strong>How to use:</strong></p>
+          <ul>
+            <li>Hover over the model to see muscle name</li>
+            <li>Use mouse to zoom and drag the model</li>
+          </ul>
+        </div>
+        <div id="controls">
           <button
             id="rotate"
             onClick={() => this.setRotateStatus(!this.state.rotateStatus)}
           >
-            Stop Rotate
+      {this.state.rotateStatus ? 'Stop Rotate' : 'Start Rotate'}
           </button>
           <button id="reset" onClick={() => this.reset()}>
             Reset Model
