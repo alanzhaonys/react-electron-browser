@@ -1,3 +1,7 @@
+/**
+ * MakerAL.com 2021
+ **/
+
 import React from "react";
 
 import * as THREE from "three";
@@ -10,15 +14,244 @@ const path = require("path");
 
 /**
  * Todo:
- * reset pos
- * stop/result animate
- * mouse pointer issue
- * zoom in
+ * Mouse pointer issue
+ * Zoom in capability
  */
 
 export class Home extends Page {
   constructor(props) {
     super(props);
+
+    // Initial states
+    this.state = {
+      rotateStatus: true
+    };
+  }
+
+  // Set rotate status
+  setRotateStatus(status) {
+    console.log("Set rotate status: " + status);
+    this.setState({
+      rotateStatus: status
+    });
+  }
+
+  // Reset
+  reset() {}
+
+  startAnimation() {
+    if (!this.animationRequest) {
+      this.animationRequest = requestAnimationFrame(this.animate);
+    }
+  }
+
+  stopAnimation() {
+    if (this.animationRequest) {
+      cancelAnimationFrame(this.animationRequest);
+    }
+  }
+
+  // Callback
+  renderScene = () => {
+    this.renderer.render(this.scene, this.camera);
+  };
+
+  componentWillUnmount() {
+    this.stopAnimation();
+    document.getElementById("scene").removeChild(this.renderer.domElement);
+  }
+
+  updateCanvasSize() {
+    this.canvasWidth = window.innerWidth;
+    this.canvasHeight =
+      window.innerHeight -
+      document.getElementsByTagName("header")[0].clientHeight -
+      document.getElementsByTagName("footer")[0].clientHeight;
+    console.log("Canvas width: " + this.canvasWidth);
+    console.log("Canvas height: " + this.canvasHeight);
+  }
+
+  setupKeyControls() {
+    document.onkeydown = event => {
+      switch (event.keyCode) {
+        case 37:
+          this.mainMesh.rotation.x += 0.1;
+          break;
+        case 38:
+          this.mainMesh.rotation.z -= 0.1;
+          break;
+        case 39:
+          this.mainMesh.rotation.x -= 0.1;
+          break;
+        case 40:
+          this.mainMesh.rotation.z += 0.1;
+          break;
+      }
+    };
+  }
+
+  updateMouse(event) {
+    let canvasBounds = this.renderer.domElement.getBoundingClientRect();
+
+    this.mousePos.x =
+      ((event.clientX - canvasBounds.left) /
+        (canvasBounds.right - canvasBounds.left)) *
+        2 -
+      1;
+    this.mousePos.y =
+      -(
+        (event.clientY - canvasBounds.top) /
+        (canvasBounds.bottom - canvasBounds.top)
+      ) *
+        2 +
+      1;
+  }
+
+  // Callback
+  onWindowResize = () => {
+    this.updateCanvasSize();
+    this.camera.aspect = this.canvasWidth / this.canvasHeight;
+    this.camera.updateProjectionMatrix();
+    this.renderer.setSize(this.canvasWidth, this.canvasHeight);
+  };
+
+  // Callback
+  onMouseClick = event => {
+    this.updateMouse(event);
+
+    this.raycaster.setFromCamera(this.mousePos, this.camera);
+
+    let intersects = this.raycaster.intersectObjects(this.scene.children, true);
+    if (intersects.length > 0) {
+      let object = intersects[0].object;
+
+      // Walk up to get parent object (if you want to only trigger callback for parent
+      //while (!object.userData.isContainer) {
+      //object = object.parent;
+      //}
+
+      // Trigger callback
+      if (object.callback) {
+        object.callback();
+      }
+    }
+  };
+
+  // Callback
+  onMouseMove = event => {
+    this.updateMouse(event);
+  };
+
+  // Callback
+  animate = () => {
+    console.log("animating");
+    // Rotate main mesh
+    if (this.mainMesh && this.state.rotateStatus === true) {
+      this.mainMesh.rotation.y += 0.01;
+    }
+
+    // Rotate spot light
+    if (this.spotLight) {
+      this.spotLight.position.set(
+        this.camera.position.x + 10,
+        this.camera.position.y + 10,
+        this.camera.position.z + 10
+      );
+    }
+
+    // Update the picking ray with the camera and mouse position
+    this.raycaster.setFromCamera(this.mousePos, this.camera);
+
+    // Calculate objects intersecting the picking ray
+    const intersects = this.raycaster.intersectObjects(
+      this.scene.children,
+      true
+    );
+
+    if (intersects.length > 0) {
+      // A new intersect is found
+      if (this.intersected != intersects[0].object) {
+        if (this.intersected) {
+          // Reset current intersect mesh color
+          this.intersected.material.color.setHex(this.intersected.currentHex);
+          // Remove box helper
+          if (this.intersected.boxHelper) {
+            this.scene.remove(this.intersected.boxHelper);
+          }
+          // Hide annotation
+          this.hideAnnotation(this.intersected.userData.label);
+        }
+
+        this.intersected = intersects[0].object;
+        if (this.intersected.isMesh) {
+          this.intersected.currentHex = this.intersected.material.color.getHex();
+          this.intersected.material.color.setHex(0x00ff00);
+          document.body.style.cursor = "pointer";
+
+          // Show box helper
+          /*const box = new THREE.Box3().setFromObject(this.intersected);
+            const boxHelper = new THREE.Box3Helper(box, 0xffff00);
+            this.scene.add(boxHelper);
+            this.intersected.boxHelper = boxHelper;
+            */
+
+          // Create annotation
+          const canvas = this.renderer.domElement;
+          const vector = new THREE.Vector3(250, 250, 250);
+          //const vector = intersects[0].point;
+          vector.project(this.camera);
+          vector.x = Math.round(
+            (0.5 + vector.x / 2) * (canvas.width / window.devicePixelRatio)
+          );
+          vector.y = Math.round(
+            (0.5 - vector.y / 2) * (canvas.height / window.devicePixelRatio)
+          );
+          // Show annotation
+          this.showAnnotation(this.intersected.userData.label, vector);
+        }
+      }
+    } else {
+      if (this.intersected) {
+        // Reset current intersect mesh color
+        this.intersected.material.color.setHex(this.intersected.currentHex);
+        // Remove box helper
+        if (this.intersected.boxHelper) {
+          this.scene.remove(this.intersected.boxHelper);
+        }
+        // Hide annotation
+        this.hideAnnotation(this.intersected.userData.label);
+      }
+      this.intersected = null;
+      document.body.style.cursor = "default";
+    }
+
+    this.renderScene();
+    // https://css-tricks.com/using-requestanimationframe/
+    this.animationRequest = requestAnimationFrame(this.animate);
+  };
+
+  showAnnotation(partName, vector) {
+    const annotation = document.querySelector("#" + partName);
+    if (annotation) {
+      console.log("Annotation found for " + partName);
+
+      // Invalid
+      annotation.style.topx = `${vector.y}px`;
+      annotation.style.leftx = `${vector.x}px`;
+
+      annotation.style.opacity = 1;
+      annotation.style.visibility = "visible";
+    } else {
+      console.log("Annotation not found for " + partName);
+    }
+  }
+
+  hideAnnotation(partName) {
+    const annotation = document.querySelector("#" + partName);
+    if (annotation) {
+      annotation.style.opacity = 0;
+      annotation.style.visibility = "hidden";
+    }
   }
 
   // Runs after the first render() lifecycle
@@ -30,61 +263,60 @@ export class Home extends Page {
     console.log("URL: " + window.location.href);
     console.log("Resource dir: " + resourceDir);
 
-    let canvasWidth;
-    let canvasHeight;
+    this.updateCanvasSize();
 
-    updateCanvasSize();
+    // Setup scene
+    this.scene = new THREE.Scene();
+    this.scene.background = new THREE.Color("black");
 
-    // https://redstapler.co/threejs-realistic-light-shadow-tutorial/
-    let scene = new THREE.Scene();
-    scene.background = new THREE.Color("black");
-
-    let camera = new THREE.PerspectiveCamera(
+    // Setup camera
+    this.camera = new THREE.PerspectiveCamera(
       100,
-      canvasWidth / canvasHeight,
+      this.canvasWidth / this.canvasHeight,
       0.1,
       2000
     );
-    camera.position.set(0, 0, 50);
-    camera.lookAt(new THREE.Vector3(0, 0, 0));
+    this.camera.position.set(0, 0, 50);
+    this.camera.lookAt(new THREE.Vector3(0, 0, 0));
 
-    let renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(canvasWidth, canvasHeight);
-    renderer.toneMapping = THREE.ReinhardToneMapping;
-    renderer.toneMappingExposure = 2.3;
-    renderer.shadowMap.enabled = true;
-    document.getElementById("scene").appendChild(renderer.domElement);
+    // Setup renderer
+    this.renderer = new THREE.WebGLRenderer({ antialias: true });
+    this.renderer.setSize(this.canvasWidth, this.canvasHeight);
+    this.renderer.toneMapping = THREE.ReinhardToneMapping;
+    this.renderer.toneMappingExposure = 2.3;
+    this.renderer.shadowMap.enabled = true;
+    document.getElementById("scene").appendChild(this.renderer.domElement);
 
-    let controls = new OrbitControls(camera, renderer.domElement);
-    controls.addEventListener("change", refresh);
+    let controls = new OrbitControls(this.camera, this.renderer.domElement);
+    controls.addEventListener("change", this.renderScene);
 
     let hemiLight = new THREE.HemisphereLight(0xffeeb1, 0x080820, 5);
-    scene.add(hemiLight);
+    this.scene.add(hemiLight);
 
-    let spotLight = new THREE.SpotLight(0xffa95c, 4);
-    spotLight.position.set(-50, 50, 50);
-    spotLight.castShadow = true;
-    spotLight.shadow.bias = -0.0001;
-    spotLight.shadow.mapSize.width = 1024 * 4;
-    spotLight.shadow.mapSize.height = 1024 * 4;
-    scene.add(spotLight);
+    this.spotLight = new THREE.SpotLight(0xffa95c, 4);
+    this.spotLight.position.set(-50, 50, 50);
+    this.spotLight.castShadow = true;
+    this.spotLight.shadow.bias = -0.0001;
+    this.spotLight.shadow.mapSize.width = 1024 * 4;
+    this.spotLight.shadow.mapSize.height = 1024 * 4;
+    this.scene.add(this.spotLight);
 
+    // Load GLTF
     let loader = new GLTFLoader();
-    let mainMesh = null;
-    console.log(
-      "Main path: " + path.join(resourceDir, "gltf", "body", "scene.gltf")
-    );
-    loader.load(path.join(resourceDir, "gltf", "body", "scene.gltf"), gltf => {
-      mainMesh = gltf.scene;
-      mainMesh.name = "Main";
-      mainMesh.userData.isContainer = true;
-      mainMesh.scale.set(2, 2, 2);
-      mainMesh.position.set(0, 0, 0);
-      mainMesh.rotation.set(0, 0, 0);
+    let gltfPath = path.join(resourceDir, "gltf", "body", "scene.gltf");
+    console.log("Main path: " + gltfPath);
+
+    loader.load(gltfPath, gltf => {
+      this.mainMesh = gltf.scene;
+      this.mainMesh.name = "Main";
+      this.mainMesh.userData.isContainer = true;
+      this.mainMesh.scale.set(2, 2, 2);
+      this.mainMesh.position.set(0, 0, 0);
+      this.mainMesh.rotation.set(0, 0, 0);
 
       let labelCount = 0;
 
-      mainMesh.traverse(n => {
+      this.mainMesh.traverse(n => {
         if (n.isMesh) {
           // Lighting
           n.castShadow = true;
@@ -104,232 +336,45 @@ export class Home extends Page {
 
       console.log("Total parts: " + labelCount);
 
-      //const box = new THREE.Box3().setFromObject(mainMesh);
+      //const box = new THREE.Box3().setFromObject(this.mainMesh);
       //const boxHelper = new THREE.Box3Helper(box, 0xffff00);
-      //scene.add(boxHelper);
+      //this.scene.add(boxHelper);
 
-      scene.add(mainMesh);
+      this.scene.add(this.mainMesh);
+
+      // After main mesh is loaded
+      this.setupKeyControls();
 
       // On click call back
-      mainMesh.callback = () => {
+      this.mainMesh.callback = () => {
         console.log("Main clicked");
       };
 
-      animate();
+      // Initialize raycaster intersection detection
+      this.raycaster = new THREE.Raycaster();
+      this.mousePos = new THREE.Vector2();
+      this.intersected = null;
 
-      // After main mesh is loaded
-      setupKeyControls();
-
+      // Showing all
       document.querySelector("#scene").style.display = "block";
+      document.querySelector("#control-group").style.display = "block";
       document.querySelector(".loading").style.display = "none";
+
+      // Register events
+      this.renderer.domElement.addEventListener(
+        "click",
+        this.onMouseClick,
+        false
+      );
+      this.renderer.domElement.addEventListener(
+        "mousemove",
+        this.onMouseMove,
+        false
+      );
+      window.addEventListener("resize", this.onWindowResize);
+
+      this.startAnimation();
     });
-
-    renderer.domElement.addEventListener("click", onMouseClick, false);
-    renderer.domElement.addEventListener("mousemove", onMouseMove, false);
-    window.addEventListener("resize", onWindowResize);
-
-    let raycaster = new THREE.Raycaster();
-    let mouse = new THREE.Vector2();
-    let intersected = null;
-    let mouseMoved = false;
-
-    function setupKeyControls() {
-      var mesh = scene.getObjectByName("Main");
-      if (mesh) {
-        console.log("Mesh is found");
-        document.onkeydown = event => {
-          switch (event.keyCode) {
-            case 37:
-              mesh.rotation.x += 0.1;
-              break;
-            case 38:
-              mesh.rotation.z -= 0.1;
-              break;
-            case 39:
-              mesh.rotation.x -= 0.1;
-              break;
-            case 40:
-              mesh.rotation.z += 0.1;
-              break;
-          }
-        };
-      } else {
-        console.log("Mesh not found");
-      }
-    }
-
-    function updateMouse(event) {
-      let canvasBounds = renderer.domElement.getBoundingClientRect();
-
-      mouse.x =
-        ((event.clientX - canvasBounds.left) /
-          (canvasBounds.right - canvasBounds.left)) *
-          2 -
-        1;
-      mouse.y =
-        -(
-          (event.clientY - canvasBounds.top) /
-          (canvasBounds.bottom - canvasBounds.top)
-        ) *
-          2 +
-        1;
-    }
-
-    function onMouseClick(event) {
-      updateMouse(event);
-
-      raycaster.setFromCamera(mouse, camera);
-
-      let intersects = raycaster.intersectObjects(scene.children, true);
-      if (intersects.length > 0) {
-        let object = intersects[0].object;
-
-        // Walk up to get parent object (if you want to only trigger callback for parent
-        //while (!object.userData.isContainer) {
-        //object = object.parent;
-        //}
-
-        // Trigger callback
-        if (object.callback) {
-          object.callback();
-        }
-      }
-    }
-
-    function onMouseMove(event) {
-      updateMouse(event);
-
-      mouseMoved = true;
-    }
-
-    function updateCanvasSize() {
-      canvasWidth = window.innerWidth;
-      canvasHeight =
-        window.innerHeight -
-        document.getElementsByTagName("header")[0].clientHeight -
-        document.getElementsByTagName("footer")[0].clientHeight;
-      console.log("Canvas width: " + canvasWidth);
-      console.log("Canvas height: " + canvasHeight);
-    }
-
-    function onWindowResize() {
-      updateCanvasSize();
-      camera.aspect = canvasWidth / canvasHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(canvasWidth, canvasHeight);
-    }
-
-    function refresh() {
-      renderer.render(scene, camera);
-    }
-
-    function animate() {
-      // Rotate main mesh
-      if (mainMesh) {
-        mainMesh.rotation.y += 0.01;
-      }
-
-      // Rotate spot light
-      if (spotLight) {
-        spotLight.position.set(
-          camera.position.x + 10,
-          camera.position.y + 10,
-          camera.position.z + 10
-        );
-      }
-
-      if (mouseMoved) {
-        // Update the picking ray with the camera and mouse position
-        raycaster.setFromCamera(mouse, camera);
-
-        // Calculate objects intersecting the picking ray
-        const intersects = raycaster.intersectObjects(scene.children, true);
-
-        if (intersects.length > 0) {
-          // A new intersect is found
-          if (intersected != intersects[0].object) {
-            if (intersected) {
-              // Reset current intersect mesh color
-              intersected.material.color.setHex(intersected.currentHex);
-              // Remove box helper
-              if (intersected.boxHelper) {
-                scene.remove(intersected.boxHelper);
-              }
-              // Hide annotation
-              hideAnnotation(intersected.userData.label);
-            }
-
-            intersected = intersects[0].object;
-            if (intersected.isMesh) {
-              intersected.currentHex = intersected.material.color.getHex();
-              intersected.material.color.setHex(0x00ff00);
-              document.body.style.cursor = "pointer";
-
-              // Show box helper
-              /*const box = new THREE.Box3().setFromObject(intersected);
-              const boxHelper = new THREE.Box3Helper(box, 0xffff00);
-              scene.add(boxHelper);
-              intersected.boxHelper = boxHelper;
-              */
-
-              // Create annotation
-              const canvas = renderer.domElement;
-              const vector = new THREE.Vector3(250, 250, 250);
-              //const vector = intersects[0].point;
-              vector.project(camera);
-              vector.x = Math.round(
-                (0.5 + vector.x / 2) * (canvas.width / window.devicePixelRatio)
-              );
-              vector.y = Math.round(
-                (0.5 - vector.y / 2) * (canvas.height / window.devicePixelRatio)
-              );
-              // Show annotation
-              showAnnotation(intersected.userData.label, vector);
-            }
-          }
-        } else {
-          if (intersected) {
-            // Reset current intersect mesh color
-            intersected.material.color.setHex(intersected.currentHex);
-            // Remove box helper
-            if (intersected.boxHelper) {
-              scene.remove(intersected.boxHelper);
-            }
-            // Hide annotation
-            hideAnnotation(intersected.userData.label);
-          }
-          intersected = null;
-          document.body.style.cursor = "default";
-        }
-      }
-
-      renderer.render(scene, camera);
-      requestAnimationFrame(animate);
-    }
-
-    function showAnnotation(partName, vector) {
-      const annotation = document.querySelector("#" + partName);
-      if (annotation) {
-        console.log("Annotation found for " + partName);
-
-        // Invalid
-        annotation.style.topx = `${vector.y}px`;
-        annotation.style.leftx = `${vector.x}px`;
-
-        annotation.style.opacity = 1;
-        annotation.style.visibility = "visible";
-      } else {
-        console.log("Annotation not found for " + partName);
-      }
-    }
-
-    function hideAnnotation(partName) {
-      const annotation = document.querySelector("#" + partName);
-      if (annotation) {
-        annotation.style.opacity = 0;
-        annotation.style.visibility = "hidden";
-      }
-    }
   }
 
   render() {
@@ -339,76 +384,127 @@ export class Home extends Page {
           <i className="fas fa-spin fa-sync" />
         </div>
         <div id="scene"></div>
-        <div id="disclaimer">Disclaimer: This application is used for demo and learning purposes of <a href="https://www.electronjs.org/" target="_blank">Electron</a>, <a href="https://reactjs.org/" target="_blank">React</a> and <a href="https://reactjs.org/" target="_blank">Three.js</a>.</div>
+        <div id="control-group">
+          <button
+            id="rotate"
+            onClick={() => this.setRotateStatus(!this.state.rotateStatus)}
+          >
+            Stop Rotate
+          </button>
+          <button id="reset" onClick={() => this.reset()}>
+            Reset Model
+          </button>
+        </div>
+        <div id="disclaimer">
+          Disclaimer: This application is used for demo and learning purposes of{" "}
+          <a href="https://www.electronjs.org/" target="_blank">
+            Electron
+          </a>
+          ,{" "}
+          <a href="https://reactjs.org/" target="_blank">
+            React
+          </a>{" "}
+          and{" "}
+          <a href="https://reactjs.org/" target="_blank">
+            Three.js
+          </a>
+          .
+        </div>
         <div className="part" id="part-1">
           Gluteus maximus
         </div>
         <div className="part" id="part-2">
-          Deltoid<br/>
-          Rhomboid<br/>
+          Deltoid
+          <br />
+          Rhomboid
+          <br />
           Teres Major
         </div>
         <div className="part" id="part-3">
-          Gastrocnemius<br/>
+          Gastrocnemius
+          <br />
           Soleus
         </div>
         <div className="part" id="part-4">
-          Semitendinosis<br/>
+          Semitendinosis
+          <br />
           Biceps Femoris
         </div>
         <div className="part" id="part-5">
           Vastus Latera
         </div>
         <div className="part" id="part-6">
-          Trapezius<br/>
-          Thoraco-lumbar Fascia<br/>
+          Trapezius
+          <br />
+          Thoraco-lumbar Fascia
+          <br />
           Latissimus Dorsi
         </div>
         <div className="part" id="part-7">
-          Frontalis<br/>
-          Orbicularis Oculi<br/>
-          Zygomaticus<br/>
-          Masseter<br/>
+          Frontalis
+          <br />
+          Orbicularis Oculi
+          <br />
+          Zygomaticus
+          <br />
+          Masseter
+          <br />
           Orbicularis Oris
         </div>
         <div className="part" id="part-8">
-          Rectus Femoris<br/>
-          Pectineus<br/>
-          Sartorius<br/>
-          Adductor Longus<br/>
+          Rectus Femoris
+          <br />
+          Pectineus
+          <br />
+          Sartorius
+          <br />
+          Adductor Longus
+          <br />
           Gracilis
         </div>
         <div className="part" id="part-9">
-          Sternocleidomastoid<br/>
+          Sternocleidomastoid
+          <br />
           Trapezius
         </div>
         <div className="part" id="part-10">
           Lubrical
         </div>
         <div className="part" id="part-11">
-          Pectoralis Major<br/>
-          Rectus Abdominus<br/>
-          Serratus Anterior<br/>
+          Pectoralis Major
+          <br />
+          Rectus Abdominus
+          <br />
+          Serratus Anterior
+          <br />
           External Oblique
         </div>
         <div className="part" id="part-12">
-          Peroneus Longus<br/>
-          Extensor Digitorum Brevis<br/>
-          Extensor Hallucis Brevis<br/>
+          Peroneus Longus
+          <br />
+          Extensor Digitorum Brevis
+          <br />
+          Extensor Hallucis Brevis
+          <br />
           Tibialis Anterior
         </div>
         <div className="part" id="part-13">
-          Gracilis<br/>
+          Gracilis
+          <br />
           Semimembranosus
         </div>
         <div className="part" id="part-14">
-          Gastrocnemius<br/>
+          Gastrocnemius
+          <br />
           Soleus
         </div>
         <div className="part" id="part-15">
-          Extensor Carpi Radialis<br/>
-          Extensor Digitorum<br/>
-          Extensor Capri Ulnaris<br/>
+          Extensor Carpi Radialis
+          <br />
+          Extensor Digitorum
+          <br />
+          Extensor Capri Ulnaris
+          <br />
           Extensor Digiti Minimi
         </div>
         <div className="part" id="part-16">

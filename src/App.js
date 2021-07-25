@@ -1,3 +1,7 @@
+/**
+ * MakerAL.com 2021
+ **/
+
 // Import React stuff
 import React from 'react';
 import { HashRouter } from 'react-router-dom';
@@ -36,7 +40,7 @@ class App extends Page {
     });
   }
 
-  async componentDidMount() {
+  componentDidMount() {
     try {
       let loaded = true;
       if (loaded) {
