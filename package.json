@@ -27,7 +27,10 @@
     ],
     "directories": {
       "buildResources": "assets"
-    }
+    },
+    "extraResources": [
+      "resources/**/*"
+    ]
   },
   "homepage": "./",
   "main": "build/electron.js",

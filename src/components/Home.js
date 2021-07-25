@@ -6,6 +6,8 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
 import { Page } from "./base/Page";
 
+const path = require("path");
+
 export class Home extends Page {
   constructor(props) {
     super(props);
@@ -13,12 +15,17 @@ export class Home extends Page {
 
   // Runs after the first render() lifecycle
   componentDidMount() {
-    let canvasWidth = window.innerWidth;
-    let canvasHeight = window.innerHeight - document.getElementsByTagName("header")[0].clientHeight
-    - document.getElementsByTagName("footer")[0].clientHeight;
+    const env = process.env.NODE_ENV;
+    const resourceDir = "resources";
 
-    console.log("Canvas width: " + canvasWidth);
-    console.log("Canvas height: " + canvasHeight);
+    console.log("Env: " + env);
+    console.log("URL: " + window.location.href);
+    console.log("Resource dir: " + resourceDir);
+
+    let canvasWidth;
+    let canvasHeight;
+
+    updateCanvasSize();
 
     let scene = new THREE.Scene();
     scene.background = new THREE.Color("black");
@@ -80,7 +87,10 @@ export class Home extends Page {
 
     let loader = new GLTFLoader();
     let mainMesh = null;
-    loader.load("skull/scene.gltf", gltf => {
+    console.log(
+      "Main path: " + path.join(resourceDir, "gltf", "skull", "scene.gltf")
+    );
+    loader.load(path.join(resourceDir, "gltf", "skull", "scene.gltf"), gltf => {
       mainMesh = gltf.scene;
       mainMesh.name = "Main";
       mainMesh.userData.isContainer = true;
@@ -106,60 +116,68 @@ export class Home extends Page {
 
     // add 3D text beveled and sized
     const fontLoader = new THREE.FontLoader();
-    fontLoader.load("fonts/amble_regular.typeface.json", function(font) {
-      let textGeo = new THREE.TextGeometry("ARE YOU LOST?", {
-        font: font,
-        size: 10,
-        height: 0.5,
-        curveSegments: 10,
-        bevelThickness: 0.5,
-        bevelSize: 0.5,
-        bevelEnabled: true
-      });
+    console.log(
+      "Font path: " +
+        path.join(resourceDir, "fonts", "amble_regular.typeface.json")
+    );
+    fontLoader.load(
+      path.join(resourceDir, "fonts", "amble_regular.typeface.json"),
+      function(font) {
+        let textGeo = new THREE.TextGeometry("ARE YOU LOST?", {
+          font: font,
+          size: 10,
+          height: 0.5,
+          curveSegments: 10,
+          bevelThickness: 0.5,
+          bevelSize: 0.5,
+          bevelEnabled: true
+        });
 
-      let material = new THREE.MeshPhongMaterial({
-        color: 0xff0000
-      });
+        let material = new THREE.MeshPhongMaterial({
+          color: 0xff0000
+        });
 
-      let textMesh = new THREE.Mesh(textGeo, material);
-      textMesh.name = "Text";
-      textMesh.userData.isContainer = true;
-      //textMesh.scale.set(0.5, 0.5, 0.5);
+        let textMesh = new THREE.Mesh(textGeo, material);
+        textMesh.name = "Text";
+        textMesh.userData.isContainer = true;
+        //textMesh.scale.set(0.5, 0.5, 0.5);
 
-      textGeo.computeBoundingBox();
-      const centerX =
-        -0.5 * (textGeo.boundingBox.max.x - textGeo.boundingBox.min.x);
-      // Center Y
-      //const centerY = -0.5 * ( textGeo.boundingBox.max.y - textGeo.boundingBox.min.y );
-      const centerY =
-        -3 * (textGeo.boundingBox.max.y - textGeo.boundingBox.min.y);
+        textGeo.computeBoundingBox();
+        const centerX =
+          -0.5 * (textGeo.boundingBox.max.x - textGeo.boundingBox.min.x);
+        // Center Y
+        //const centerY = -0.5 * ( textGeo.boundingBox.max.y - textGeo.boundingBox.min.y );
+        const centerY =
+          -3 * (textGeo.boundingBox.max.y - textGeo.boundingBox.min.y);
 
-      //let center = box.getCenter(new THREE.Vector3());
-      //let size = box.getSize(new THREE.Vector3());
-      //textMesh.position.set(-center.x, size.y / 2 - center.y, -center.z);
+        //let center = box.getCenter(new THREE.Vector3());
+        //let size = box.getSize(new THREE.Vector3());
+        //textMesh.position.set(-center.x, size.y / 2 - center.y, -center.z);
 
-      textMesh.position.set(centerX, centerY, 0);
+        textMesh.position.set(centerX, centerY, 0);
 
-      textMesh.rotation.x = 0;
-      textMesh.rotation.y = 0;
-      textMesh.rotation.z = 0;
+        textMesh.rotation.x = 0;
+        textMesh.rotation.y = 0;
+        textMesh.rotation.z = 0;
 
-      //const box = new THREE.Box3().setFromObject(textMesh);
-      //const boxHelper = new THREE.Box3Helper(box, 0xffff00);
-      //scene.add(boxHelper);
+        //const box = new THREE.Box3().setFromObject(textMesh);
+        //const boxHelper = new THREE.Box3Helper(box, 0xffff00);
+        //scene.add(boxHelper);
 
-      scene.add(textMesh);
+        scene.add(textMesh);
 
-      // On click call back
-      textMesh.callback = () => {
-        console.log("Text clicked");
-      };
+        // On click call back
+        textMesh.callback = () => {
+          console.log("Text clicked");
+        };
 
-      animate();
-    });
+        animate();
+      }
+    );
 
     renderer.domElement.addEventListener("click", onMouseClick, false);
     renderer.domElement.addEventListener("mousemove", onMouseMove, false);
+    window.addEventListener("resize", onWindowResize);
 
     let raycaster = new THREE.Raycaster();
     let mouse = new THREE.Vector2();
@@ -204,6 +222,23 @@ export class Home extends Page {
       updateMouse(event);
 
       mouseMoved = true;
+    }
+
+    function updateCanvasSize() {
+      canvasWidth = window.innerWidth;
+      canvasHeight =
+        window.innerHeight -
+        document.getElementsByTagName("header")[0].clientHeight -
+        document.getElementsByTagName("footer")[0].clientHeight;
+      console.log("Canvas width: " + canvasWidth);
+      console.log("Canvas height: " + canvasHeight);
+    }
+
+    function onWindowResize() {
+      updateCanvasSize();
+      camera.aspect = canvasWidth / canvasHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(canvasWidth, canvasHeight);
     }
 
     function refresh() {
