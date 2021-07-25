@@ -47,13 +47,13 @@ class App extends Page {
 
           // Change color <body>
           document.body.classList.add("body-no-gradient");
-        }, 2000);
+        }, 1000);
       } else {
         // Add delay for UX
         setTimeout(() => {
           // Update db status
           this.setStatus(this.loadStatuses.FAILED);
-        }, 2000);
+        }, 1000);
       }
     } catch (exception) {
       // Add delay for UX

@@ -11,6 +11,9 @@ export class Header extends Page {
           <li>
             <NavLink to="/home" activeClassName="selected">Home</NavLink>
           </li>
+          <li>
+            <NavLink to="/lost" activeClassName="selected">Lost</NavLink>
+          </li>
         </ul>
       </header>
     );

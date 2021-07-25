@@ -8,6 +8,16 @@ import { Page } from "./base/Page";
 
 const path = require("path");
 
+/**
+ * Todo:
+ * reset pos
+ * stop/result animate
+ * loading spinner
+ * mouse pointer issue
+ * about
+ * body label
+ */
+
 export class Home extends Page {
   constructor(props) {
     super(props);
@@ -27,6 +37,7 @@ export class Home extends Page {
 
     updateCanvasSize();
 
+    // https://redstapler.co/threejs-realistic-light-shadow-tutorial/
     let scene = new THREE.Scene();
     scene.background = new THREE.Color("black");
 
@@ -41,70 +52,63 @@ export class Home extends Page {
 
     let renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(canvasWidth, canvasHeight);
+    renderer.toneMapping = THREE.ReinhardToneMapping;
+    renderer.toneMappingExposure = 2.3;
+    renderer.shadowMap.enabled = true;
     document.getElementById("scene").appendChild(renderer.domElement);
 
     let controls = new OrbitControls(camera, renderer.domElement);
     controls.addEventListener("change", refresh);
 
-    //let hlight = new THREE.AmbientLight(0x404040, 10);
-    //scene.add(hlight);
+    let hemiLight = new THREE.HemisphereLight(0xffeeb1, 0x080820, 5);
+    scene.add(hemiLight);
 
-    let directionalLight = new THREE.DirectionalLight(0xffffff, 5);
-    directionalLight.position.set(0, 1, 0);
-    directionalLight.castShadow = true;
-    scene.add(directionalLight);
-
-    let light = new THREE.PointLight(0xc4c4c4, 1);
-    light.position.set(0, 300, 500);
-    scene.add(light);
-
-    let light2 = new THREE.PointLight(0xc4c4c4, 1);
-    light2.position.set(500, 100, 0);
-    scene.add(light2);
-
-    let light3 = new THREE.PointLight(0xc4c4c4, 1);
-    light3.position.set(0, 100, -500);
-    scene.add(light3);
-
-    let light4 = new THREE.PointLight(0xc4c4c4, 1);
-    light4.position.set(-500, 300, 500);
-    scene.add(light4);
-
-    /*
-    const dirLight = new THREE.DirectionalLight(0xffffff, 2);
-    dirLight.position.set(0, 0, 1).normalize();
-    scene.add(dirLight);
-    */
-
-    /*
-    const pointLight = new THREE.PointLight(0xffffff, 3);
-    pointLight.position.set(0, 100, 90);
-    scene.add(pointLight);
-    */
-
-    //let pivot = new THREE.Group();
-    //scene.add( pivot );
+    let spotLight = new THREE.SpotLight(0xffa95c, 4);
+    spotLight.position.set(-50, 50, 50);
+    spotLight.castShadow = true;
+    spotLight.shadow.bias = -0.0001;
+    spotLight.shadow.mapSize.width = 1024 * 4;
+    spotLight.shadow.mapSize.height = 1024 * 4;
+    scene.add(spotLight);
 
     let loader = new GLTFLoader();
     let mainMesh = null;
     console.log(
-      "Main path: " + path.join(resourceDir, "gltf", "skull", "scene.gltf")
+      "Main path: " + path.join(resourceDir, "gltf", "body", "scene.gltf")
     );
-    loader.load(path.join(resourceDir, "gltf", "skull", "scene.gltf"), gltf => {
+    loader.load(path.join(resourceDir, "gltf", "body", "scene.gltf"), gltf => {
       mainMesh = gltf.scene;
       mainMesh.name = "Main";
       mainMesh.userData.isContainer = true;
-      mainMesh.scale.set(15, 15, 15);
+      mainMesh.scale.set(2.5, 2.5, 2.5);
       mainMesh.position.set(0, 0, 0);
-      //pivot.add( mainMesh );
+      mainMesh.rotation.set(0, 0, 0);
+
+      let labelCount = 0;
+
+      mainMesh.traverse(n => {
+        if (n.isMesh) {
+          // Lighting
+          n.castShadow = true;
+          n.receiveShadow = true;
+          if (n.material.map) {
+            n.material.map.anisotropy = 16;
+          }
+
+          // Custom data, assign a label
+          n.userData.label = "part-" + ++labelCount;
+
+          n.callback = () => {
+            console.log(n.userData.label);
+          };
+        }
+      });
+
+      console.log("Total parts: " + labelCount);
 
       //const box = new THREE.Box3().setFromObject(mainMesh);
       //const boxHelper = new THREE.Box3Helper(box, 0xffff00);
       //scene.add(boxHelper);
-
-      //let center = box.getCenter(new THREE.Vector3());
-      //let size = box.getSize(new THREE.Vector3());
-      //mainMesh.position.set(-center.x, size.y / 2 - center.y, -center.z);
 
       scene.add(mainMesh);
 
@@ -112,68 +116,12 @@ export class Home extends Page {
       mainMesh.callback = () => {
         console.log("Main clicked");
       };
+
+      animate();
+
+      // After main mesh is loaded
+      setupKeyControls();
     });
-
-    // add 3D text beveled and sized
-    const fontLoader = new THREE.FontLoader();
-    console.log(
-      "Font path: " +
-        path.join(resourceDir, "fonts", "amble_regular.typeface.json")
-    );
-    fontLoader.load(
-      path.join(resourceDir, "fonts", "amble_regular.typeface.json"),
-      function(font) {
-        let textGeo = new THREE.TextGeometry("ARE YOU LOST?", {
-          font: font,
-          size: 10,
-          height: 0.5,
-          curveSegments: 10,
-          bevelThickness: 0.5,
-          bevelSize: 0.5,
-          bevelEnabled: true
-        });
-
-        let material = new THREE.MeshPhongMaterial({
-          color: 0xff0000
-        });
-
-        let textMesh = new THREE.Mesh(textGeo, material);
-        textMesh.name = "Text";
-        textMesh.userData.isContainer = true;
-        //textMesh.scale.set(0.5, 0.5, 0.5);
-
-        textGeo.computeBoundingBox();
-        const centerX =
-          -0.5 * (textGeo.boundingBox.max.x - textGeo.boundingBox.min.x);
-        // Center Y
-        //const centerY = -0.5 * ( textGeo.boundingBox.max.y - textGeo.boundingBox.min.y );
-        const centerY =
-          -3 * (textGeo.boundingBox.max.y - textGeo.boundingBox.min.y);
-
-        //let center = box.getCenter(new THREE.Vector3());
-        //let size = box.getSize(new THREE.Vector3());
-        //textMesh.position.set(-center.x, size.y / 2 - center.y, -center.z);
-
-        textMesh.position.set(centerX, centerY, 0);
-
-        textMesh.rotation.x = 0;
-        textMesh.rotation.y = 0;
-        textMesh.rotation.z = 0;
-
-        //const box = new THREE.Box3().setFromObject(textMesh);
-        //const boxHelper = new THREE.Box3Helper(box, 0xffff00);
-        //scene.add(boxHelper);
-
-        scene.add(textMesh);
-
-        // On click call back
-        textMesh.callback = () => {
-          console.log("Text clicked");
-        };
-
-        animate();
-      }
-    );
 
     renderer.domElement.addEventListener("click", onMouseClick, false);
     renderer.domElement.addEventListener("mousemove", onMouseMove, false);
@@ -183,6 +131,31 @@ export class Home extends Page {
     let mouse = new THREE.Vector2();
     let intersected = null;
     let mouseMoved = false;
+
+    function setupKeyControls() {
+      var mesh = scene.getObjectByName("Main");
+      if (mesh) {
+        console.log("Mesh is found");
+        document.onkeydown = event => {
+          switch (event.keyCode) {
+            case 37:
+              mesh.rotation.x += 0.1;
+              break;
+            case 38:
+              mesh.rotation.z -= 0.1;
+              break;
+            case 39:
+              mesh.rotation.x -= 0.1;
+              break;
+            case 40:
+              mesh.rotation.z += 0.1;
+              break;
+          }
+        };
+      } else {
+        console.log("Mesh not found");
+      }
+    }
 
     function updateMouse(event) {
       let canvasBounds = renderer.domElement.getBoundingClientRect();
@@ -210,11 +183,15 @@ export class Home extends Page {
       if (intersects.length > 0) {
         let object = intersects[0].object;
 
-        // Walk up to get parent object
-        while (!object.userData.isContainer) {
-          object = object.parent;
+        // Walk up to get parent object (if you want to only trigger callback for parent
+        //while (!object.userData.isContainer) {
+        //object = object.parent;
+        //}
+
+        // Trigger callback
+        if (object.callback) {
+          object.callback();
         }
-        object.callback();
       }
     }
 
@@ -251,6 +228,15 @@ export class Home extends Page {
         mainMesh.rotation.y += 0.01;
       }
 
+      // Rotate spot light
+      if (spotLight) {
+        spotLight.position.set(
+          camera.position.x + 10,
+          camera.position.y + 10,
+          camera.position.z + 10
+        );
+      }
+
       if (mouseMoved) {
         // Update the picking ray with the camera and mouse position
         raycaster.setFromCamera(mouse, camera);
@@ -259,19 +245,57 @@ export class Home extends Page {
         const intersects = raycaster.intersectObjects(scene.children, true);
 
         if (intersects.length > 0) {
+          // A new intersect is found
           if (intersected != intersects[0].object) {
             if (intersected) {
+              // Reset current intersect mesh color
               intersected.material.color.setHex(intersected.currentHex);
+              // Remove box helper
+              if (intersected.boxHelper) {
+                scene.remove(intersected.boxHelper);
+              }
+              // Hide annotation
+              hideAnnotation(intersected.userData.label);
             }
 
             intersected = intersects[0].object;
-            intersected.currentHex = intersected.material.color.getHex();
-            intersected.material.color.setHex(0x00ff00);
-            document.body.style.cursor = "pointer";
+            if (intersected.isMesh) {
+              intersected.currentHex = intersected.material.color.getHex();
+              intersected.material.color.setHex(0x00ff00);
+              document.body.style.cursor = "pointer";
+
+              // Show box helper
+              /*const box = new THREE.Box3().setFromObject(intersected);
+              const boxHelper = new THREE.Box3Helper(box, 0xffff00);
+              scene.add(boxHelper);
+              intersected.boxHelper = boxHelper;
+              */
+
+              // Create annotation
+              const canvas = renderer.domElement;
+              const vector = new THREE.Vector3(250, 250, 250);
+              //const vector = intersects[0].point;
+              vector.project(camera);
+              vector.x = Math.round(
+                (0.5 + vector.x / 2) * (canvas.width / window.devicePixelRatio)
+              );
+              vector.y = Math.round(
+                (0.5 - vector.y / 2) * (canvas.height / window.devicePixelRatio)
+              );
+              // Show annotation
+              showAnnotation(intersected.userData.label, vector);
+            }
           }
         } else {
           if (intersected) {
+            // Reset current intersect mesh color
             intersected.material.color.setHex(intersected.currentHex);
+            // Remove box helper
+            if (intersected.boxHelper) {
+              scene.remove(intersected.boxHelper);
+            }
+            // Hide annotation
+            hideAnnotation(intersected.userData.label);
           }
           intersected = null;
           document.body.style.cursor = "default";
@@ -281,17 +305,84 @@ export class Home extends Page {
       renderer.render(scene, camera);
       requestAnimationFrame(animate);
     }
+
+    function showAnnotation(partName, vector) {
+      const annotation = document.querySelector("#" + partName);
+      if (annotation) {
+        console.log("Annotation found for " + partName);
+
+        // Invalid
+        annotation.style.topx = `${vector.y}px`;
+        annotation.style.leftx = `${vector.x}px`;
+
+        annotation.style.opacity = 1;
+        annotation.style.visibility = "visible";
+      } else {
+        console.log("Annotation not found for " + partName);
+      }
+    }
+
+    function hideAnnotation(partName) {
+      const annotation = document.querySelector("#" + partName);
+      if (annotation) {
+        annotation.style.opacity = 0;
+        annotation.style.visibility = "hidden";
+      }
+    }
   }
 
   render() {
     return (
       <div className="page">
         <div id="scene"></div>
-        <ul id="menu">
-          <li>Menu 1</li>
-          <li>Menu 2</li>
-          <li>Menu 3</li>
-        </ul>
+        <div className="part" id="part-1">
+          Part 1
+        </div>
+        <div className="part" id="part-2">
+          Part 2
+        </div>
+        <div className="part" id="part-3">
+          Part 3
+        </div>
+        <div className="part" id="part-4">
+          Part 4
+        </div>
+        <div className="part" id="part-5">
+          Part 5
+        </div>
+        <div className="part" id="part-6">
+          Part 6
+        </div>
+        <div className="part" id="part-7">
+          Part 7
+        </div>
+        <div className="part" id="part-8">
+          Part 8
+        </div>
+        <div className="part" id="part-9">
+          Part 9
+        </div>
+        <div className="part" id="part-10">
+          Part 10
+        </div>
+        <div className="part" id="part-11">
+          Part 11
+        </div>
+        <div className="part" id="part-12">
+          Part 12
+        </div>
+        <div className="part" id="part-13">
+          Part 13
+        </div>
+        <div className="part" id="part-14">
+          Part 14
+        </div>
+        <div className="part" id="part-15">
+          Part 15
+        </div>
+        <div className="part" id="part-16">
+          Part 16
+        </div>
       </div>
     );
   }
