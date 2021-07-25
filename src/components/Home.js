@@ -80,7 +80,7 @@ export class Home extends Page {
       mainMesh = gltf.scene;
       mainMesh.name = "Main";
       mainMesh.userData.isContainer = true;
-      mainMesh.scale.set(2.5, 2.5, 2.5);
+      mainMesh.scale.set(2, 2, 2);
       mainMesh.position.set(0, 0, 0);
       mainMesh.rotation.set(0, 0, 0);
 

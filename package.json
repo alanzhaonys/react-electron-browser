@@ -1,6 +1,6 @@
 {
   "name": "react-electron-browser",
-  "description": "my app description",
+  "description": "Virtual Human Muscle Anatomy",
   "version": "1.2.0",
   "private": false,
   "license": "MIT",
@@ -11,7 +11,7 @@
   },
   "build": {
     "appId": "com.my-website.react-electron-browser",
-    "productName": "MyApp",
+    "productName": "Virtual Human Muscle Anatomy",
     "copyright": "Copyright © 2019-2020 ${author}",
     "mac": {
       "category": "public.app-category.utilities",

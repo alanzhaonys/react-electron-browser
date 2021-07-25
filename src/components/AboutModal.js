@@ -20,7 +20,26 @@ export class AboutModal extends React.Component {
         </Modal.Header>
         <Modal.Body>
           <p>
-            Please checkout MakerAL.com for more goodies.
+            <strong>3D model credits:</strong>
+          </p>
+
+          <p> 
+            <a href="https://sketchfab.com/3d-models/male-full-body-ecorche-ab11ebff89224f03bd75efede1164cf6" target="_blank">Male Full Body Ecorche</a> by <a href="https://sketchfab.com/diegoluga" target="_blank">Diego Luján García from Madrid, Spain</a><br/>
+            Licensed under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">CC Attribution</a>.
+          </p>
+          
+          <p>
+            <a href="https://sketchfab.com/3d-models/skull-downloadable-1a9db900738d44298b0bc59f68123393" target="_blank">Skull downloadable</a> by <a href="https://sketchfab.com/martinjario" target="_blank">martinjario from Madrid, Spain</a><br/>
+            Licensed under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">CC Attribution</a>.
+          </p>
+
+          <p>
+            <a href="https://www.pexels.com/photo/matrix-background-1089438/" target="_blank">Matrix Background</a> by <a href="https://www.pexels.com/@markusspiske" target="_blank">Markus Spiske from Upper Franconia, Bavaria, Germany</a><br/>
+            Licensed under <a href="https://www.pexels.com/license/" target="_blank">Pexels Free to Use</a>.
+          </p>
+
+          <p>      
+            <strong>Visit <a href="https://www.makeral.com" target="_blank">MakerAL.com</a> for more goodies.</strong>
           </p>
         </Modal.Body>
         <Modal.Footer>

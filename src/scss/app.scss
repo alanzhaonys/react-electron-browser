@@ -104,7 +104,7 @@ header {
   justify-content: center;
 
   background-color: $theme-color-orange;
-  padding: 20px;
+  padding: 10px;
 }
 
 .loading,
@@ -126,7 +126,6 @@ header {
   }
 }
 
-
 // End app layout
 
 header {
@@ -140,12 +139,14 @@ header {
     list-style: none;
 
     li {
+      margin: 0 20px;
       a {
         padding: 1.25rem 0.5rem;
         font-size: 1.6rem;
         font-weight: normal;
         text-decoration: none;
         text-transform: uppercase;
+        font-weight: 500;
         display: flex;
         align-items: flex-start;
         color: #fff;
@@ -161,7 +162,7 @@ header {
 
 footer {
   color: #fff;
-  font-size: 16px;
+  font-size: 14px;
   .col-left {
     text-align: center;
     @include media-breakpoint-up(md) {
