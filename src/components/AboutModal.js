@@ -38,6 +38,12 @@ export class AboutModal extends React.Component {
             Licensed under <a href="https://www.pexels.com/license/" target="_blank">Pexels Free to Use</a>.
           </p>
 
+          <p>
+            <a href="https://www.pexels.com/photo/black-and-white-abstract-painting-7911699/" target="_blank">Black and White Abstract Painting
+</a> by <a href="https://www.pexels.com/@alesiakozik" target="_blank">Alesia Kozik from Erfurt</a><br/>
+            Licensed under <a href="https://www.pexels.com/license/" target="_blank">Pexels Free to Use</a>.
+          </p>
+
           <p>      
             <strong>Visit <a href="https://www.makeral.com" target="_blank">MakerAL.com</a> for more goodies.</strong>
           </p>

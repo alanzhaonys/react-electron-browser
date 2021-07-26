@@ -252,7 +252,7 @@ code {
     padding: 20px 30px;
     background-color: rgba(255, 255, 255, 0.1);
     position: absolute;
-    bottom: 50%;
+    bottom: 47%;
     right: 5%;
     display: none;
     color: #efefef;
@@ -274,7 +274,7 @@ code {
     padding: 20px 30px;
     background-color: rgba(255, 255, 255, 0.1);
     position: absolute;
-    bottom: 30%;
+    bottom: 25%;
     right: 5%;
     display: none;
 
@@ -295,7 +295,7 @@ code {
         color: #fff;
       }
 
-      &:nth-child(1) {
+      &:not(:last-child) {
         margin-bottom: 5px;
       }
     }
@@ -316,6 +316,7 @@ code {
     bottom: 10%;
     right: 5%;
     max-width: 300px;
+    display: none;
     a {
       color: #fff;
     }

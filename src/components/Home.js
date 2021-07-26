@@ -18,20 +18,50 @@ export class Home extends Page {
 
     // Initial states
     this.state = {
-      rotateStatus: true
+      rotate: true,
+      background: false
     };
   }
 
-  // Set rotate status
-  setRotateStatus(status) {
-    console.log("Set rotate status: " + status);
+  // Set background
+  setBackground(status) {
+    console.log("Set background: " + status);
+
+    // Show/hide background
+    if (status) {
+      this.backgroundScene.background = new THREE.CubeTextureLoader()
+        .setPath(path.join(this.resourceDir, "backgrounds", path.sep))
+        .load([
+          "main.jpg",
+          "main.jpg",
+          "main.jpg",
+          "main.jpg",
+          "main.jpg",
+          "main.jpg"
+        ]);
+    } else {
+      this.backgroundScene.background = new THREE.Color("black");
+    }
+
     this.setState({
-      rotateStatus: status
+      background: status
     });
   }
 
-  // Reset
-  reset() {
+  // Set rotate
+  setRotate(status) {
+    console.log("Set rotate: " + status);
+    this.setState({
+      rotate: status
+    });
+  }
+
+  // Reset model
+  resetModel() {
+    this.mainMesh.scale.set(2, 2, 2);
+    this.mainMesh.position.set(0, 0, 0);
+    this.mainMesh.rotation.set(0, 0, 0);
+
     this.camera.position.set(0, 0, 50);
     this.camera.lookAt(new THREE.Vector3(0, 0, 0));
     this.controls.reset();
@@ -52,6 +82,8 @@ export class Home extends Page {
 
   // Callback
   renderScene = () => {
+    this.renderer.clear();
+    this.renderer.render(this.backgroundScene, this.backgroundCamera);
     this.renderer.render(this.scene, this.camera);
   };
 
@@ -144,7 +176,7 @@ export class Home extends Page {
   // Callback
   animate = () => {
     // Rotate main mesh
-    if (this.mainMesh && this.state.rotateStatus === true) {
+    if (this.mainMesh && this.state.rotate) {
       this.mainMesh.rotation.y += 0.01;
     }
 
@@ -255,17 +287,16 @@ export class Home extends Page {
   // Runs after the first render() lifecycle
   componentDidMount() {
     const env = process.env.NODE_ENV;
-    const resourceDir = "resources";
+    this.resourceDir = "resources";
 
     console.log("Env: " + env);
     console.log("URL: " + window.location.href);
-    console.log("Resource dir: " + resourceDir);
+    console.log("Resource dir: " + this.resourceDir);
 
     this.updateCanvasSize();
 
     // Setup scene
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color("black");
 
     // Setup camera
     this.camera = new THREE.PerspectiveCamera(
@@ -277,12 +308,26 @@ export class Home extends Page {
     this.camera.position.set(0, 0, 50);
     this.camera.lookAt(new THREE.Vector3(0, 0, 0));
 
+    // Setup background scene
+    this.backgroundScene = new THREE.Scene();
+
+    // Setup background camera
+    this.backgroundCamera = new THREE.PerspectiveCamera(
+      100,
+      this.canvasWidth / this.canvasHeight,
+      0.1,
+      2000
+    );
+    this.backgroundCamera.position.set(0, 0, 50);
+    this.backgroundCamera.lookAt(new THREE.Vector3(0, 0, 0));
+
     // Setup renderer
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
     this.renderer.setSize(this.canvasWidth, this.canvasHeight);
     this.renderer.toneMapping = THREE.ReinhardToneMapping;
     this.renderer.toneMappingExposure = 2.3;
     this.renderer.shadowMap.enabled = true;
+    this.renderer.autoClear = false;
     document.getElementById("scene").appendChild(this.renderer.domElement);
 
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
@@ -301,7 +346,7 @@ export class Home extends Page {
 
     // Load GLTF
     let loader = new GLTFLoader();
-    let gltfPath = path.join(resourceDir, "gltf", "body", "scene.gltf");
+    let gltfPath = path.join(this.resourceDir, "gltf", "body", "scene.gltf");
     console.log("Main path: " + gltfPath);
 
     loader.load(gltfPath, gltf => {
@@ -385,22 +430,23 @@ export class Home extends Page {
         </div>
         <div id="scene"></div>
         <div id="instructions">
-          <p><strong>How to use:</strong></p>
+          <p>
+            <strong>How to use:</strong>
+          </p>
           <ul>
-            <li>Hover over the model to see muscle name</li>
+            <li>Hover over the model to reveal muscle name</li>
             <li>Use mouse to zoom and drag the model</li>
+            <li>Hold CTL key and drag mouse to rotate the model</li>
           </ul>
         </div>
         <div id="controls">
-          <button
-            id="rotate"
-            onClick={() => this.setRotateStatus(!this.state.rotateStatus)}
-          >
-      {this.state.rotateStatus ? 'Stop Rotate' : 'Start Rotate'}
+          <button onClick={() => this.setRotate(!this.state.rotate)}>
+            {this.state.rotate ? "Stop Rotate" : "Start Rotate"}
           </button>
-          <button id="reset" onClick={() => this.reset()}>
-            Reset Model
+          <button onClick={() => this.setBackground(!this.state.background)}>
+            {this.state.background ? "Hide Background" : "Show Background"}
           </button>
+          <button onClick={() => this.resetModel()}>Reset Model</button>
         </div>
         <div id="disclaimer">
           Disclaimer: This application is used for demo and learning purposes of{" "}
