@@ -1,5 +1,5 @@
 // Modules to control application life and create native browser window
-const {app, BrowserWindow} = require('electron')
+const {app, globalShortcut, dialog, BrowserWindow} = require('electron')
 const path = require('path')
 const url = require('url')
 
@@ -10,11 +10,14 @@ let mainWindow
 function createWindow () {
   // Create the browser window.
   mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 800,
+    //width: 1200,
+    //height: 800,
     resizable: false,
     maximizable: false,
     show: false,
+    //kiosk: true,
+    alwaysOnTop: true,
+    center: true,
     webPreferences: {
       //devTools: false,
       nodeIntegration: true
@@ -66,6 +69,31 @@ app.on('activate', function () {
   // dock icon is clicked and there are no other windows open.
   if (mainWindow === null) createWindow()
 })
+
+app.whenReady().then(() => {
+  globalShortcut.register('Alt+CommandOrControl+C', () => {
+    if (mainWindow) {
+      const options = {
+        type: 'question',
+        buttons: ['Yes', 'No'],
+        defaultId: 0,
+        cancelId: 1,
+        title: 'Quit?',
+        message: 'Do you really want to quit this application?',
+        detail: '',
+      }
+
+      dialog.showMessageBox(mainWindow, options).then(result => {
+        console.log(result)
+        if (result.response === 0) {
+            mainWindow.close()
+        }
+      }).catch(err => {
+        console.log(err)
+      })
+    }
+  })
+}).then(createWindow)
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
