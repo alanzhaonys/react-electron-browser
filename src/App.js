@@ -1,6 +1,6 @@
 // Import React stuff
 import React from 'react';
-import { BrowserRouter } from 'react-router-dom';
+import { HashRouter } from 'react-router-dom';
 
 // Import components
 import { Page } from './components/base/Page';
@@ -14,11 +14,11 @@ import './scss/app.scss';
 class App extends Page {
   render() {
     return (
-      <BrowserRouter>
+      <HashRouter>
         <Header />
         <Main />
         <Footer />
-      </BrowserRouter>
+      </HashRouter>
     );
   }
 }
