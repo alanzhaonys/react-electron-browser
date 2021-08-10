@@ -7,15 +7,17 @@ const url = require('url')
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow
 
+let closeAppDialog = false
+
 function createWindow () {
   // Create the browser window.
   mainWindow = new BrowserWindow({
-    //width: 1200,
-    //height: 800,
+    width: 1200,
+    height: 800,
     resizable: false,
     maximizable: false,
     show: false,
-    //kiosk: true,
+    kiosk: true,
     alwaysOnTop: true,
     center: true,
     webPreferences: {
@@ -72,7 +74,7 @@ app.on('activate', function () {
 
 app.whenReady().then(() => {
   globalShortcut.register('Alt+CommandOrControl+C', () => {
-    if (mainWindow) {
+    if (mainWindow && !closeAppDialog) {
       const options = {
         type: 'question',
         buttons: ['Yes', 'No'],
@@ -83,10 +85,13 @@ app.whenReady().then(() => {
         detail: '',
       }
 
+      closeAppDialog = true
+
       dialog.showMessageBox(mainWindow, options).then(result => {
         console.log(result)
+        closeAppDialog = false
         if (result.response === 0) {
-            mainWindow.close()
+          mainWindow.close()
         }
       }).catch(err => {
         console.log(err)
