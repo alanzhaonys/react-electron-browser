@@ -13,7 +13,12 @@
     "productName": "ReactElectronBrowser",
     "copyright": "Copyright © 2019-2020 ${author}",
     "mac": {
-      "category": "public.app-category.utilities"
+      "category": "public.app-category.utilities",
+      "icon": "build/icon.icns",
+      "target": [
+        "dir",
+        "dmg"
+      ]
     },
     "files": [
       "build/**/*",
@@ -21,7 +26,10 @@
     ],
     "directories": {
       "buildResources": "assets"
-    }
+    },
+    "extraResources": [
+      "resources/**/*"
+    ]
   },
   "homepage": "./",
   "main": "build/electron.js",
@@ -50,7 +58,7 @@
     ]
   },
   "dependencies": {
-    "bootstrap": "^5.0.2",
+    "bootstrap": "^5.1.0",
     "react": "^17.0.2",
     "react-bootstrap": "^1.6.1",
     "react-dom": "^17.0.2",
@@ -58,10 +66,10 @@
     "react-scripts": "4.0.3"
   },
   "devDependencies": {
-    "@fortawesome/fontawesome-free": "^5.15.3",
-    "concurrently": "^6.2.0",
+    "@fortawesome/fontawesome-free": "^5.15.4",
+    "concurrently": "^6.2.1",
     "cross-env": "^7.0.3",
-    "electron": "^13.1.7",
+    "electron": "^13.1.9",
     "electron-builder": "^22.11.7",
     "node-sass": "^6.0.1",
     "typescript": "^4.3.5",
